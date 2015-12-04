@@ -5,8 +5,9 @@ import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
-import java.io.File;
-import java.io.FileOutputStream;
+import java.io.*;
+import java.nio.file.Path;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
@@ -17,6 +18,58 @@ import java.util.TreeMap;
  */
 public class App {
     public static void main(String[] args) {
+        convertXlsxFile("file2.xlsx");
+    }
+    public static boolean convertXlsxFile(String fileName) {
+        boolean result = false;
+        String tableData = "<table>\n";
+        try {
+            FileInputStream file = new FileInputStream(fileName);
+            XSSFWorkbook workbook = new XSSFWorkbook(file);
+            XSSFSheet sheet = workbook.getSheetAt(0);
+            Iterator<Row> rowIterator = sheet.iterator();
+            while(rowIterator.hasNext()) {
+                boolean addRow = true;
+                String tableRow = "\t<tr>";
+                Row row = rowIterator.next();
+                Iterator<Cell> cellIterator = row.cellIterator();
+                rowloop:
+                while(cellIterator.hasNext()) {
+                    String tableCell = "<td>";
+                    Cell cell = cellIterator.next();
+                    switch(cell.getCellType()) {
+                        case Cell.CELL_TYPE_STRING:
+                            tableCell += cell.getStringCellValue().toString().trim();
+//                            System.out.print( "[" + cell.getStringCellValue() + "]");
+                            break;
+                        case Cell.CELL_TYPE_NUMERIC:
+//                            System.out.print( "N: " + cell.getNumericCellValue());
+                            break;
+                        case Cell.CELL_TYPE_BLANK:
+                            addRow = false;
+                            break rowloop;
+                        default:
+//                            System.out.print( cell.getCellType() );
+                    }
+                    tableCell += "</td>";
+                    tableRow += tableCell;
+//                    System.out.print( "\t" );
+                }
+                if(addRow) {
+                    tableRow += "</tr>\n";
+                    tableData += tableRow;
+                }
+            }
+            tableData += "</table>";
+            result = true;
+        } catch (Exception e) {
+            e.printStackTrace();
+            result = false;
+        }
+        System.out.print(tableData);
+        return result;
+    }
+    public static void createSpreasShit() {
         //Blank workbook
         XSSFWorkbook workbook = new XSSFWorkbook();
 
@@ -56,5 +109,4 @@ public class App {
             e.printStackTrace();
         }
     }
-
 }
