@@ -5,7 +5,9 @@ import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
+import javax.swing.*;
 import java.io.*;
+import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.*;
 
@@ -23,22 +25,39 @@ public class App {
     }
 
     public static void main(String[] args) {
-        // TODO: 05.12.2015
+        try {
+            UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        MainDialog dlg = new MainDialog();
+        //dlg.setSize(500, 250);
+        dlg.pack();
+        dlg.setTitle("Конвертация файлов из Excel в HTML");
+        dlg.setLocationRelativeTo(null);
+        dlg.setVisible(true);
+        /*
         App Converter = new App("f:\\tmp\\Excel", "f:\\tmp\\HTML");
         try {
             Converter.convertAllFiles();
         } catch (IOException e) {
             e.printStackTrace();
         }
+        */
     }
-    public void convertAllFiles() throws IOException {
+    public void convertAllFiles() {
         File dir = new File(this.srcFolder);
+        if(dir == null) {
+            return;
+        }
         for( File f : dir.listFiles() ) {
-            convertXlsxFile(f.getCanonicalPath(), getHtmlFileName(f.getName()));
+            try {
+                convertXlsxFile(f.getCanonicalPath(), getHtmlFileName(f.getName()));
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
     }
-
-
     public static void convertXlsxFile(String srcFileName, String dstFileName) {
         String s;
         if( (s = getDataFromXlsx(srcFileName)).equals("") ) {

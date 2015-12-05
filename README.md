@@ -5,7 +5,7 @@ Converts XLSX files to HTML files
 
 + Write HTML file
 + Convert all xlsx files in directory
-* Add folder chooser (GUI)
++ Add folder chooser (GUI)
 * Add html template
 * Add subtitles
 * Build to .exe
