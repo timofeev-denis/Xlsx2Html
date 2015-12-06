@@ -1,5 +1,7 @@
 package ru.ntmedia;
 
+import freemarker.template.Configuration;
+import freemarker.template.TemplateExceptionHandler;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
@@ -44,6 +46,18 @@ public class App {
             e.printStackTrace();
         }
         */
+    }
+    public boolean getTemplateCfg(String templatePath) {
+        Configuration cfg = new Configuration(Configuration.VERSION_2_3_22);
+        try {
+            cfg.setDirectoryForTemplateLoading(new File(templatePath));
+        } catch (IOException e) {
+            e.printStackTrace();
+            return false;
+        }
+        cfg.setDefaultEncoding("UTF-8");
+        cfg.setTemplateExceptionHandler(TemplateExceptionHandler.RETHROW_HANDLER);
+        return true;
     }
     public void convertAllFiles() {
         File dir = new File(this.srcFolder);
