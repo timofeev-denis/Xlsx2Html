@@ -4,6 +4,8 @@ import javax.swing.*;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import java.awt.event.*;
+import java.io.File;
+import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.Locale;
@@ -118,8 +120,14 @@ public class MainDialog extends JDialog {
             JOptionPane.showMessageDialog(null, "Указанный каталог для сохранения файлов HTML не существует. Выберите другой каталог.", "Конвертация файлов", JOptionPane.INFORMATION_MESSAGE);
             return;
         }
-
         App app = new App(srcTextField.getText(), destTextField.getText());
+        try {
+            app.getTemplateCfg(getClass().getProtectionDomain().getCodeSource().getLocation().toURI().getPath());
+        } catch (URISyntaxException e) {
+            e.printStackTrace();
+            JOptionPane.showMessageDialog(null, "Не удалось определить каталог с шаблонами.", "Конвертация файлов", JOptionPane.INFORMATION_MESSAGE);
+            return;
+        }
         app.convertAllFiles();
         dispose();
     }
