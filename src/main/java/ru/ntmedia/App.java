@@ -103,45 +103,44 @@ public class App {
         fw.close();
     }
     public static String getDataFromXlsx(String fileName) {
-        String result = "<table>\n";
+        ArrayList<String[]> tableData = new ArrayList<>();
+        String result = "";
+        int rowIndex = -1;
         try {
             FileInputStream file = new FileInputStream(fileName);
             XSSFWorkbook workbook = new XSSFWorkbook(file);
             XSSFSheet sheet = workbook.getSheetAt(0);
             Iterator<Row> rowIterator = sheet.iterator();
             while(rowIterator.hasNext()) {
+                rowIndex++;
+                String[] tableRow = new String[2];
                 boolean addRow = true;
-                String tableRow = "\t<tr>";
                 Row row = rowIterator.next();
-                Iterator<Cell> cellIterator = row.cellIterator();
                 rowloop:
-                while(cellIterator.hasNext()) {
-                    String tableCell = "<td>";
-                    Cell cell = cellIterator.next();
+                for(int colIndex = 0; colIndex < 2; colIndex++) {
+                    Cell cell = row.getCell(colIndex);
+                    if( cell == null || cell.getCellType() == Cell.CELL_TYPE_BLANK) {
+                        //addRow = false;
+                        //break rowloop;
+                        continue;
+                    }
                     switch(cell.getCellType()) {
                         case Cell.CELL_TYPE_STRING:
-                            tableCell += cell.getStringCellValue().replace("\u00A0", " ").trim();
+                            tableRow[colIndex] = cell.getStringCellValue().replace("\u00A0", " ").trim();
                             break;
                         case Cell.CELL_TYPE_NUMERIC:
-                            tableCell += String.valueOf(cell.getNumericCellValue());
+                            tableRow[colIndex] += String.valueOf(cell.getNumericCellValue());
                             break;
-                        case Cell.CELL_TYPE_BLANK:
-                            addRow = false;
-                            break rowloop;
-                        default:
                     }
-                    tableCell += "</td>";
-                    tableRow += tableCell;
                 }
                 if(addRow) {
-                    tableRow += "</tr>\n";
-                    result += tableRow;
+                    //tableRow += "</tr>\n";
+                    tableData.add(tableRow);
                 }
             }
-            result += "</table>";
+            //result += "</table>";
         } catch (Exception e) {
             e.printStackTrace();
-            result = "";
         }
         return result;
     }
