@@ -29,6 +29,10 @@ public class App {
     }
 
     public static void main(String[] args) {
+
+        System.out.println(getDataFromXlsx("f:\\tmp\\Excel\\Книга10.xlsx"));
+        return;
+        /*
         try {
             UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
         } catch (Exception e) {
@@ -44,14 +48,6 @@ public class App {
                 dlg.setVisible(true);
             }
         });
-        //dlg.setSize(500, 250);
-        /*
-        App Converter = new App("f:\\tmp\\Excel", "f:\\tmp\\HTML");
-        try {
-            Converter.convertAllFiles();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
         */
     }
     public boolean getTemplateCfg(String templatePath) {
@@ -127,6 +123,7 @@ public class App {
                             tableCell += cell.getStringCellValue().replace("\u00A0", " ").trim();
                             break;
                         case Cell.CELL_TYPE_NUMERIC:
+                            tableCell += String.valueOf(cell.getNumericCellValue());
                             break;
                         case Cell.CELL_TYPE_BLANK:
                             addRow = false;
@@ -146,6 +143,9 @@ public class App {
             e.printStackTrace();
             result = "";
         }
+        return result;
+    }
+    public static String updateLastCell(String result, String data) {
         return result;
     }
     public static void createSpreadShit() {
