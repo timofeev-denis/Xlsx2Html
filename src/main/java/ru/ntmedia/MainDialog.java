@@ -3,6 +3,7 @@ package ru.ntmedia;
 import javax.swing.*;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import java.awt.*;
 import java.awt.event.*;
 import java.io.File;
 import java.net.URISyntaxException;
@@ -23,6 +24,9 @@ public class MainDialog extends JDialog {
     //private String destFolder;
 
     public MainDialog() {
+        System.out.println( getClass().getClassLoader().getResource("convert-16x16.png") );
+        Image icon = new ImageIcon(getClass().getClassLoader().getResource("convert-16x16.png")).getImage();
+        this.setIconImage(icon);
         setContentPane(contentPane);
         setModal(true);
         getRootPane().setDefaultButton(buttonOK);
@@ -100,6 +104,10 @@ public class MainDialog extends JDialog {
                 updateOkButton();
             }
         });
+
+
+        //
+        setDebugParameters();
     }
 
     private void updateOkButton() {
@@ -110,6 +118,11 @@ public class MainDialog extends JDialog {
         }
     }
 
+    private void setDebugParameters() {
+        srcTextField.setText("e:\\tmp\\Excel\\");
+        destTextField.setText("e:\\tmp\\Excel\\");
+        updateOkButton();
+    }
     private void onOK() {
         //System.err.println(srcTextField.getText());
         if(!Files.exists(Paths.get(srcTextField.getText()))) {

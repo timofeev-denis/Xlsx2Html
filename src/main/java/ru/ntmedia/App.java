@@ -8,6 +8,8 @@ import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
 import javax.swing.*;
+import java.awt.*;
+import java.awt.image.BufferedImage;
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -32,12 +34,17 @@ public class App {
         } catch (Exception e) {
             e.printStackTrace();
         }
-        MainDialog dlg = new MainDialog();
+
+        javax.swing.SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                MainDialog dlg = new MainDialog();
+                dlg.pack();
+                dlg.setTitle("Конвертация файлов из Excel в HTML");
+                dlg.setLocationRelativeTo(null);
+                dlg.setVisible(true);
+            }
+        });
         //dlg.setSize(500, 250);
-        dlg.pack();
-        dlg.setTitle("Конвертация файлов из Excel в HTML");
-        dlg.setLocationRelativeTo(null);
-        dlg.setVisible(true);
         /*
         App Converter = new App("f:\\tmp\\Excel", "f:\\tmp\\HTML");
         try {
@@ -141,7 +148,7 @@ public class App {
         }
         return result;
     }
-    public static void createSpreasShit() {
+    public static void createSpreadShit() {
         //Blank workbook
         XSSFWorkbook workbook = new XSSFWorkbook();
 

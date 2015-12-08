@@ -6,6 +6,6 @@ Converts XLSX files to HTML files
 + Write HTML file
 + Convert all xlsx files in directory
 + Add folder chooser (GUI)
-* Add html template
+* Add html template - http://dorma-sean.ru/ts-77/
 * Add subtitles
 * Build to .exe
