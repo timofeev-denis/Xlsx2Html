@@ -158,18 +158,22 @@ public class App {
     }
     public String addHtml(ArrayList<String[]> tableData) {
         String result = "<style>\n" +
+                ".table-hover {\n" +
+                "\tborder-spacing: 0;\n" +
+                "    border-collapse: collapse;\n" +
+                "}\n" +
                 ".table-hover tr:hover {\n" +
                 "    background-color: #f5f5f5;\n" +
                 "}\n" +
                 ".table-hover td {\n" +
                 "    padding: 8px;\n" +
                 "    border-top: 1px solid #ddd;\n" +
+                "    border-bottom: 1px solid #ddd;\n" +
                 "    min-width: 145px;\n" +
                 "    color: #777;\n" +
                 "    vertical-align: top;\n" +
-                "    border: none;\n" +
                 "}\n" +
-                "</style>";
+                "</style>\n";
 
         result += "<table class='table-hover'>\n";
         for (String[] s : tableData) {
