@@ -62,7 +62,7 @@ public class MainDialog extends JDialog {
 
         setSrcFolderButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent actionEvent) {
-                JFileChooser fileDialog = new JFileChooser();
+                JFileChooser fileDialog = new JFileChooser(System.getProperty("user.dir"));
                 fileDialog.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
                 if( fileDialog.showOpenDialog(MainDialog.this) == JFileChooser.APPROVE_OPTION ) {
                     srcTextField.setText(fileDialog.getSelectedFile().toString());
@@ -71,7 +71,7 @@ public class MainDialog extends JDialog {
         });
         setDestFolderButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent actionEvent) {
-                JFileChooser fileDialog = new JFileChooser();
+                JFileChooser fileDialog = new JFileChooser(System.getProperty("user.dir"));
                 fileDialog.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
                 if( fileDialog.showSaveDialog(MainDialog.this) == JFileChooser.APPROVE_OPTION ) {
                     destTextField.setText(fileDialog.getSelectedFile().toString());
@@ -107,7 +107,7 @@ public class MainDialog extends JDialog {
 
 
         //
-        setDebugParameters();
+        //setDebugParameters();
     }
 
     private void updateOkButton() {
@@ -141,7 +141,14 @@ public class MainDialog extends JDialog {
             JOptionPane.showMessageDialog(null, "Не удалось определить каталог с шаблонами.", "Конвертация файлов", JOptionPane.INFORMATION_MESSAGE);
             return;
         }
-        app.convertAllFiles();
+        try {
+            app.convertAllFiles();
+            JOptionPane.showMessageDialog(null, "Конвертация завершена успешно.", "Конвертация файлов", JOptionPane.INFORMATION_MESSAGE);
+        } catch(Exception e) {
+            e.printStackTrace();
+            JOptionPane.showMessageDialog(null, "Конвертация завершена с ошибкой:\n" + e.getMessage(), "Конвертация файлов", JOptionPane.WARNING_MESSAGE);
+        }
+
         dispose();
     }
 
