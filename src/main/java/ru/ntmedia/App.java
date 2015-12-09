@@ -22,6 +22,7 @@ import java.util.*;
 public class App {
     private final String srcFolder;
     private final String destFolder;
+    private final static int TABLE_COL_COUNT = 2;
 
     public App(String srcFolder, String destFolder) {
         this.srcFolder = srcFolder;
@@ -30,7 +31,7 @@ public class App {
 
     public static void main(String[] args) {
 
-        System.out.println(getDataFromXlsx("f:\\tmp\\Excel\\Книга10.xlsx"));
+        System.out.println(getDataFromXlsx("e:\\tmp\\Excel\\Книга10.xlsx"));
         return;
         /*
         try {
@@ -113,29 +114,83 @@ public class App {
             Iterator<Row> rowIterator = sheet.iterator();
             while(rowIterator.hasNext()) {
                 rowIndex++;
-                String[] tableRow = new String[2];
+                String[] rowData = new String[TABLE_COL_COUNT];
                 boolean addRow = true;
                 Row row = rowIterator.next();
-                rowloop:
-                for(int colIndex = 0; colIndex < 2; colIndex++) {
+                for(int colIndex = 0; colIndex < TABLE_COL_COUNT; colIndex++) {
                     Cell cell = row.getCell(colIndex);
                     if( cell == null || cell.getCellType() == Cell.CELL_TYPE_BLANK) {
-                        //addRow = false;
-                        //break rowloop;
+                        rowData[colIndex] = "";
+                    } else {
+                        switch(cell.getCellType()) {
+                            case Cell.CELL_TYPE_STRING:
+                                rowData[colIndex] = cell.getStringCellValue().replace("\u00A0", " ").trim();
+                                break;
+                            case Cell.CELL_TYPE_NUMERIC:
+                                rowData[colIndex] = String.valueOf(cell.getNumericCellValue());
+                                break;
+                        }
+                    }
+                    /*
+                    boolean append = false;
+                    Cell cell = row.getCell(colIndex);
+                    if( cell == null || cell.getCellType() == Cell.CELL_TYPE_BLANK) {
+                        if (rowIndex != 0) {
+                            append = true;
+                        }
+                        addRow = false;
                         continue;
                     }
+                    String cellValue = " ";
                     switch(cell.getCellType()) {
                         case Cell.CELL_TYPE_STRING:
-                            tableRow[colIndex] = cell.getStringCellValue().replace("\u00A0", " ").trim();
+                            cellValue = cell.getStringCellValue().replace("\u00A0", " ").trim();
                             break;
                         case Cell.CELL_TYPE_NUMERIC:
-                            tableRow[colIndex] += String.valueOf(cell.getNumericCellValue());
+                            cellValue = String.valueOf(cell.getNumericCellValue());
                             break;
                     }
+                    if(append) {
+                        String[] tmp = tableData.get(rowIndex-1);
+                        tmp[1] += "<br>\n" + cellValue;
+                        tableData.set(rowIndex-1, tmp);
+                    } else {
+                        rowData[colIndex] = cellValue;
+                    }
+                    */
                 }
-                if(addRow) {
-                    //tableRow += "</tr>\n";
-                    tableData.add(tableRow);
+                if(rowData[0].equals("") || rowData[1].equals("") ) {
+                    // Была пустая ячейка
+                    if (rowIndex == 0) {
+                        // Пропускаем строку с названием
+                        continue;
+                    }
+                    String[] tmp;
+                    if (tableData.size() > 0) {
+                        tmp = tableData.get(tableData.size() - 1);
+                    } else {
+                        tmp = new String[TABLE_COL_COUNT];
+                        for (int x = 0; x < TABLE_COL_COUNT; x++) {
+                            tmp[x] = "";
+                        }
+                    }
+                    for(int i = 0; i < TABLE_COL_COUNT; i++) {
+                        if(!rowData[i].equals("")) {
+                            if(!tmp[i].equals("")) {
+                                tmp[i] += "<br>\n";
+                            }
+                            tmp[i] += rowData[i];
+                        }
+                    }
+                    if (tableData.size() > 0) {
+                        tableData.set(tableData.size() - 1, tmp);
+                    } else {
+                        tableData.add(tmp);
+                    }
+
+                } else {
+                    // Все ячейки заполнены
+                    tableData.add(rowData);
                 }
             }
             //result += "</table>";
@@ -146,45 +201,5 @@ public class App {
     }
     public static String updateLastCell(String result, String data) {
         return result;
-    }
-    public static void createSpreadShit() {
-        //Blank workbook
-        XSSFWorkbook workbook = new XSSFWorkbook();
-
-        //Create a blank sheet
-        XSSFSheet sheet = workbook.createSheet("Employee Data");
-
-        //This data needs to be written (Object[])
-        Map<String, Object[]> data = new TreeMap<String, Object[]>();
-        data.put("1", new Object[]{"ID", "NAME", "LASTNAME"});
-        data.put("2", new Object[]{1, "Amit", "Shukla"});
-        data.put("3", new Object[]{2, "Lokesh", "Gupta"});
-        data.put("4", new Object[]{3, "John", "Adwards"});
-        data.put("5", new Object[]{4, "Brian", "Schultz"});
-
-        //Iterate over data and write to sheet
-        Set<String> keyset = data.keySet();
-        int rownum = 0;
-        for (String key : keyset) {
-            Row row = sheet.createRow(rownum++);
-            Object[] objArr = data.get(key);
-            int cellnum = 0;
-            for (Object obj : objArr) {
-                Cell cell = row.createCell(cellnum++);
-                if (obj instanceof String)
-                    cell.setCellValue((String) obj);
-                else if (obj instanceof Integer)
-                    cell.setCellValue((Integer) obj);
-            }
-        }
-        try {
-            //Write the workbook in file system
-            FileOutputStream out = new FileOutputStream(new File("howtodoinjava_demo.xlsx"));
-            workbook.write(out);
-            out.close();
-            System.out.println("howtodoinjava_demo.xlsx written successfully on disk.");
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
     }
 }
