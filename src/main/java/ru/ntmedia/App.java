@@ -1,8 +1,5 @@
 package ru.ntmedia;
 
-import com.sun.javaws.exceptions.InvalidArgumentException;
-import freemarker.template.Configuration;
-import freemarker.template.TemplateExceptionHandler;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
@@ -55,28 +52,21 @@ public class App {
             }
         });
     }
-    public boolean getTemplateCfg(String templatePath) {
-        Configuration cfg = new Configuration(Configuration.VERSION_2_3_22);
-        try {
-            cfg.setDirectoryForTemplateLoading(new File(templatePath));
-        } catch (IOException e) {
-            e.printStackTrace();
-            return false;
-        }
-        cfg.setDefaultEncoding("UTF-8");
-        cfg.setTemplateExceptionHandler(TemplateExceptionHandler.RETHROW_HANDLER);
-        return true;
-    }
     public void convertAllFiles() throws IOException {
         File dir = new File(this.srcFolder);
         if(dir == null) {
             throw new IllegalArgumentException("Не удалось открыть указанный каталог: " + this.srcFolder );
         }
-        for( File f : dir.listFiles() ) {
+        for( File f : dir.listFiles(new FilenameFilter() {
+            @Override
+            public boolean accept(File file, String s) {
+                return s.toLowerCase().endsWith(".xlsx");
+            }
+        }) ) {
             convertXlsxFile(f.getCanonicalPath(), getHtmlFileName(f.getName()));
         }
     }
-    public static void convertXlsxFile(String srcFileName, String dstFileName) throws IOException {
+    public void convertXlsxFile(String srcFileName, String dstFileName) throws IOException {
         String s;
         if( (s = getDataFromXlsx(srcFileName)).equals("") ) {
             System.out.println( "EMPTY DATA" );
@@ -101,7 +91,7 @@ public class App {
         //fw.write(String.valueOf(Charset.forName("UTF-8").encode(data)));
         osw.close();
     }
-    public static String getDataFromXlsx(String fileName) throws IOException {
+    public String getDataFromXlsx(String fileName) throws IOException {
         ArrayList<String[]> tableData = new ArrayList<>();
         String result = "";
         int rowIndex = -1;
@@ -166,16 +156,21 @@ public class App {
         }
         return addHtml(tableData);
     }
-    public static String addHtml(ArrayList<String[]> tableData) {
-        String result = null;
-        URL url = App.class.getClassLoader().getResource("template.html");
-        try {
-            Path p = Paths.get(url.toURI());
-            byte[] encoded = Files.readAllBytes(p);
-            result = new String(encoded);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+    public String addHtml(ArrayList<String[]> tableData) {
+        String result = "<style>\n" +
+                ".table-hover tr:hover {\n" +
+                "    background-color: #f5f5f5;\n" +
+                "}\n" +
+                ".table-hover td {\n" +
+                "    padding: 8px;\n" +
+                "    border-top: 1px solid #ddd;\n" +
+                "    min-width: 145px;\n" +
+                "    color: #777;\n" +
+                "    vertical-align: top;\n" +
+                "    border: none;\n" +
+                "}\n" +
+                "</style>";
+
         result += "<table class='table-hover'>\n";
         for (String[] s : tableData) {
             result += String.format("\t<tr><td width=30%%>%s</td><td height=70%%>%s</td></tr>\n", s[0], s[1]);

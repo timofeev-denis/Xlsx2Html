@@ -135,13 +135,6 @@ public class MainDialog extends JDialog {
         }
         App app = new App(srcTextField.getText(), destTextField.getText());
         try {
-            app.getTemplateCfg(getClass().getProtectionDomain().getCodeSource().getLocation().toURI().getPath());
-        } catch (URISyntaxException e) {
-            e.printStackTrace();
-            JOptionPane.showMessageDialog(null, "Не удалось определить каталог с шаблонами.", "Конвертация файлов", JOptionPane.INFORMATION_MESSAGE);
-            return;
-        }
-        try {
             app.convertAllFiles();
             JOptionPane.showMessageDialog(null, "Конвертация завершена успешно.", "Конвертация файлов", JOptionPane.INFORMATION_MESSAGE);
         } catch(Exception e) {
