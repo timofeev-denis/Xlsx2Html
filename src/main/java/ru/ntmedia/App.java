@@ -218,7 +218,7 @@ public class App {
                     result += String.format("\t<tr><td colspan=2 class='table-hover-subtitle'>%s</td></tr>\n", r.data[0], r.data[1]);
                     break;
                 default:
-                    result += String.format("\t<tr><td class='table-hover-name'>%s</td><td class='table-hover-value'>%s</td></tr>\n", r.data[0], r.data[1]);
+                    result += String.format("\t<tr><td>%s</td><td>%s</td></tr>\n", r.data[0], r.data[1]);
             }
 
         }
