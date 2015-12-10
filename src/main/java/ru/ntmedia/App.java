@@ -170,7 +170,6 @@ public class App {
                 "    border-top: 1px solid #ddd;\n" +
                 "    border-bottom: 1px solid #ddd;\n" +
                 "    min-width: 145px;\n" +
-                "    color: #777;\n" +
                 "    vertical-align: top;\n" +
                 "}\n" +
                 "</style>\n";
