@@ -25,6 +25,7 @@ public class App {
     private final String srcFolder;
     private final String destFolder;
     private final static int TABLE_COL_COUNT = 2;
+    private enum ROW_TYPE {TITLE, SUBTITLE, TEXT};
 
     public App(String srcFolder, String destFolder) {
         this.srcFolder = srcFolder;
@@ -32,9 +33,15 @@ public class App {
     }
 
     public static void main(String[] args) {
-
-        //System.out.println(getDataFromXlsx("f:\\tmp\\Excel\\таблица.xlsx"));
-        //return;
+        /*
+        App app = new App("", "");
+        try {
+            System.out.println(app.getDataFromXlsx("f:\\tmp\\Excel\\Книга10.xlsx"));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return;
+        */
 
         try {
             UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
@@ -92,7 +99,8 @@ public class App {
         osw.close();
     }
     public String getDataFromXlsx(String fileName) throws IOException {
-        ArrayList<String[]> tableData = new ArrayList<>();
+        ArrayList<RowData> tableData = new ArrayList<>();
+        String header = "";
         String result = "";
         int rowIndex = -1;
 
@@ -120,43 +128,62 @@ public class App {
                     }
                 }
             }
-            if (rowData[0].equals("") || rowData[1].equals("")) {
-                // Была пустая ячейка
+            /*
+            незаполненная 2-я ячейка в первой строке - это заголовок
+            незаполненная 2-я ячейка во второй и далее строке - это подзаголовок
+            незаполненная 1-я ячейка - это продолжение предыдущей строки
+                либо новая строка
+            */
+            if (rowData[0].equals("") && rowData[1].equals("")) {
+                // Обе ячейки пусты - пропускаем строку
+                // TODO: переделать на произвольное количество ячеек в таблице
+                continue;
+            }
+            if (rowData[0].equals("")) {
+                RowData tmp = new RowData();
                 if (rowIndex == 0) {
-                    // Пропускаем строку с названием
-                    continue;
-                }
-                String[] tmp;
-                if (tableData.size() > 0) {
-                    tmp = tableData.get(tableData.size() - 1);
-                } else {
-                    tmp = new String[TABLE_COL_COUNT];
-                    for (int x = 0; x < TABLE_COL_COUNT; x++) {
-                        tmp[x] = "";
-                    }
-                }
-                for (int i = 0; i < TABLE_COL_COUNT; i++) {
-                    if (!rowData[i].equals("")) {
-                        if (!tmp[i].equals("")) {
-                            tmp[i] += "<br>";
-                        }
-                        tmp[i] += rowData[i];
-                    }
-                }
-                if (tableData.size() > 0) {
-                    tableData.set(tableData.size() - 1, tmp);
-                } else {
+                    // Новая строка
+                    tmp.data[0] = "";
+                    tmp.data[1] = rowData[1];
+                    tmp.rowType = ROW_TYPE.TEXT;
                     tableData.add(tmp);
+                } else {
+                    // Продолжение предыдущей строки
+                    tmp = tableData.get(tableData.size() - 1);
+                    for (int i = 0; i < TABLE_COL_COUNT; i++) {
+                        if (!rowData[i].equals("")) {
+                            if (!tmp.data[i].equals("")) {
+                                tmp.data[i] += "<br>";
+                            }
+                            tmp.data[i] += rowData[i];
+                        }
+                    }
+                    if (tableData.size() > 0) {
+                        tableData.set(tableData.size() - 1, tmp);
+                    } else {
+                        tableData.add(tmp);
+                    }
                 }
-
+            } else if(rowData[1].equals("")) {
+                // Незаполненная 2-я ячейка
+                RowData tmp = new RowData();
+                tmp.data = rowData;
+                if (rowIndex == 0) {
+                    // В первой строке - это заголовок
+                    tmp.rowType = ROW_TYPE.TITLE;
+                } else {
+                    // Во второй и далее строке - это подзаголовок
+                    tmp.rowType = ROW_TYPE.SUBTITLE;
+                }
+                tableData.add(tmp);
             } else {
                 // Все ячейки заполнены
-                tableData.add(rowData);
+                tableData.add(new RowData(rowData, ROW_TYPE.TEXT));
             }
         }
         return addHtml(tableData);
     }
-    public String addHtml(ArrayList<String[]> tableData) {
+    public String addHtml(ArrayList<RowData> tableData) {
         String result = "<style>\n" +
                 ".table-hover {\n" +
                 "\tborder-spacing: 0;\n" +
@@ -174,14 +201,43 @@ public class App {
                 "}\n" +
                 "</style>\n";
 
+        if (tableData.size() == 0) {
+            return result;
+        }
+        RowData r = tableData.get(0);
+        int rowIndex = 0;
+        if( r.rowType == ROW_TYPE.TITLE) {
+            result += String.format( "<h2 class='table-hover-title'>%s</h2>\n", r.data[0]);
+            rowIndex++;
+        }
         result += "<table class='table-hover'>\n";
-        for (String[] s : tableData) {
-            result += String.format("\t<tr><td width=30%%>%s</td><td height=70%%>%s</td></tr>\n", s[0], s[1]);
+        for (; rowIndex < tableData.size(); rowIndex++) {
+            r = tableData.get(rowIndex);
+            switch (r.rowType) {
+                case SUBTITLE:
+                    result += String.format("\t<tr><td colspan=2 class='table-hover-subtitle'>%s</td></tr>\n", r.data[0], r.data[1]);
+                    break;
+                default:
+                    result += String.format("\t<tr><td class='table-hover-name'>%s</td><td class='table-hover-value'>%s</td></tr>\n", r.data[0], r.data[1]);
+            }
+
         }
         result += "</table>";
         return result;
     }
     public static String updateLastCell(String result, String data) {
         return result;
+    }
+
+    private final class RowData {
+        public String[] data;
+        public ROW_TYPE rowType;
+        public RowData() {
+
+        }
+        public RowData(String[] data, ROW_TYPE rowType) {
+            this.data = data;
+            this.rowType = rowType;
+        }
     }
 }
