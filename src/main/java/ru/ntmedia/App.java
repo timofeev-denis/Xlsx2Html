@@ -19,13 +19,17 @@ import java.util.*;
 
 /**
  * Hello world!
- *
  */
 public class App {
     private final String srcFolder;
     private final String destFolder;
     private final static int TABLE_COL_COUNT = 2;
-    private enum ROW_TYPE {TITLE, SUBTITLE, TEXT};
+
+    private enum ROW_TYPE {
+        TITLE,
+        SUBTITLE,
+        TEXT
+    }
 
     public App(String srcFolder, String destFolder) {
         this.srcFolder = srcFolder;
@@ -33,16 +37,6 @@ public class App {
     }
 
     public static void main(String[] args) {
-        /*
-        App app = new App("", "");
-        try {
-            System.out.println(app.getDataFromXlsx("f:\\tmp\\Excel\\Книга10.xlsx"));
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        return;
-        */
-
         try {
             UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
         } catch (Exception e) {
@@ -59,28 +53,31 @@ public class App {
             }
         });
     }
+
     public void convertAllFiles() throws IOException {
         File dir = new File(this.srcFolder);
-        if(dir == null) {
-            throw new IllegalArgumentException("Не удалось открыть указанный каталог: " + this.srcFolder );
+        if (dir == null) {
+            throw new IllegalArgumentException("Не удалось открыть указанный каталог: " + this.srcFolder);
         }
-        for( File f : dir.listFiles(new FilenameFilter() {
+        for (File f : dir.listFiles(new FilenameFilter() {
             @Override
             public boolean accept(File file, String s) {
                 return s.toLowerCase().endsWith(".xlsx");
             }
-        }) ) {
+        })) {
             convertXlsxFile(f.getCanonicalPath(), getHtmlFileName(f.getName()));
         }
     }
+
     public void convertXlsxFile(String srcFileName, String dstFileName) throws IOException {
         String s;
-        if( (s = getDataFromXlsx(srcFileName)).equals("") ) {
-            System.out.println( "EMPTY DATA" );
+        if ((s = getDataFromXlsx(srcFileName)).equals("")) {
+            System.out.println("EMPTY DATA");
             return;
         }
-        writeHtmlFile( dstFileName, s);
+        writeHtmlFile(dstFileName, s);
     }
+
     public String getHtmlFileName(String fileName) {
         // cut path
         String baseFileName = Paths.get(fileName).getFileName().toString();
@@ -88,9 +85,10 @@ public class App {
         String rootFileName = baseFileName.substring(0, baseFileName.lastIndexOf("."));
         return this.destFolder + File.separator + rootFileName + ".html";
     }
+
     public static void writeHtmlFile(String fileName, String data) throws IOException {
-        if(fileName == null || fileName.equals("")) {
-            throw new IllegalArgumentException( "Имя файла не указано." );
+        if (fileName == null || fileName.equals("")) {
+            throw new IllegalArgumentException("Имя файла не указано.");
         }
         OutputStreamWriter osw = new OutputStreamWriter(new FileOutputStream(fileName), "CP1251");
         osw.write(data);
@@ -98,6 +96,7 @@ public class App {
         //fw.write(String.valueOf(Charset.forName("UTF-8").encode(data)));
         osw.close();
     }
+
     public String getDataFromXlsx(String fileName) throws IOException {
         ArrayList<RowData> tableData = new ArrayList<>();
         String header = "";
@@ -123,7 +122,12 @@ public class App {
                             rowData[colIndex] = cell.getStringCellValue().replace("\u00A0", " ").trim();
                             break;
                         case Cell.CELL_TYPE_NUMERIC:
-                            rowData[colIndex] = String.valueOf(cell.getNumericCellValue());
+                            double numericCellValue = cell.getNumericCellValue();
+                            if (numericCellValue - (long) numericCellValue != 0) {
+                                rowData[colIndex] = String.valueOf(numericCellValue);
+                            } else {
+                                rowData[colIndex] = String.format("%.0f", numericCellValue);
+                            }
                             break;
                     }
                 }
@@ -164,7 +168,7 @@ public class App {
                         tableData.add(tmp);
                     }
                 }
-            } else if(rowData[1].equals("")) {
+            } else if (rowData[1].equals("")) {
                 // Незаполненная 2-я ячейка
                 RowData tmp = new RowData();
                 tmp.data = rowData;
@@ -183,6 +187,7 @@ public class App {
         }
         return addHtml(tableData);
     }
+
     public String addHtml(ArrayList<RowData> tableData) {
         String result = "";
 
@@ -191,8 +196,8 @@ public class App {
         }
         RowData r = tableData.get(0);
         int rowIndex = 0;
-        if( r.rowType == ROW_TYPE.TITLE) {
-            result += String.format( "<h2 class='table-hover-title'>%s</h2>\n", r.data[0]);
+        if (r.rowType == ROW_TYPE.TITLE) {
+            result += String.format("<h2 class='table-hover-title'>%s</h2>\n", r.data[0]);
             rowIndex++;
         }
         result += "<table class='table-hover'>\n";
@@ -210,6 +215,7 @@ public class App {
         result += "</table>";
         return result;
     }
+
     public static String updateLastCell(String result, String data) {
         return result;
     }
@@ -217,9 +223,11 @@ public class App {
     private final class RowData {
         public String[] data;
         public ROW_TYPE rowType;
+
         public RowData() {
 
         }
+
         public RowData(String[] data, ROW_TYPE rowType) {
             this.data = data;
             this.rowType = rowType;
