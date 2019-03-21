@@ -1,5 +1,7 @@
-target/
-.idea/workspace.xml
-.idea/tasks.xml
-.idea/dictionaries/
+/target/
+
+### IntelliJ IDEA ###
+.idea
 *.iws
+*.iml
+*.ipr
