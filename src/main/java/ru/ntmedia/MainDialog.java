@@ -5,11 +5,8 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import java.awt.*;
 import java.awt.event.*;
-import java.io.File;
-import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.Locale;
 
 public class MainDialog extends JDialog {
     private JPanel contentPane;
@@ -23,7 +20,7 @@ public class MainDialog extends JDialog {
     //private String srcFolder;
     //private String destFolder;
 
-    public MainDialog() {
+    MainDialog() {
         System.out.println( getClass().getClassLoader().getResource("convert-16x16.png") );
         Image icon = new ImageIcon(getClass().getClassLoader().getResource("convert-16x16.png")).getImage();
         this.setIconImage(icon);
@@ -107,7 +104,7 @@ public class MainDialog extends JDialog {
 
 
         //
-        //setDebugParameters();
+        setDebugParameters();
     }
 
     private void updateOkButton() {
@@ -119,8 +116,8 @@ public class MainDialog extends JDialog {
     }
 
     private void setDebugParameters() {
-        srcTextField.setText("e:\\tmp\\Excel\\");
-        destTextField.setText("e:\\tmp\\Excel\\");
+        srcTextField.setText("/home/denis/Xls/");
+        destTextField.setText("/home/denis/Html");
         updateOkButton();
     }
     private void onOK() {

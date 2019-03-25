@@ -6,16 +6,13 @@ import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
 import javax.swing.*;
-import java.awt.*;
-import java.awt.image.BufferedImage;
 import java.io.*;
-import java.net.URISyntaxException;
-import java.net.URL;
-import java.nio.charset.Charset;
 import java.nio.file.Files;
-import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
 
 /**
  * Hello world!
@@ -23,17 +20,30 @@ import java.util.*;
 public class App {
     private final String srcFolder;
     private final String destFolder;
+    private final Map<ROW_TYPE, String> templates = new HashMap<>();
     private final static int TABLE_COL_COUNT = 2;
 
     private enum ROW_TYPE {
-        TITLE,
         SUBTITLE,
         TEXT
     }
 
-    public App(String srcFolder, String destFolder) {
+    App(String srcFolder, String destFolder) {
         this.srcFolder = srcFolder;
         this.destFolder = destFolder;
+        templates.put(ROW_TYPE.TEXT, readTemplateFromFile("templates/data-cell.html"));
+        templates.put(ROW_TYPE.SUBTITLE, readTemplateFromFile("templates/subtitle.html"));
+    }
+
+    private static void writeHtmlFile(String fileName, String data) throws IOException {
+        if (fileName == null || fileName.equals("")) {
+            throw new IllegalArgumentException("Имя файла не указано.");
+        }
+        OutputStreamWriter osw = new OutputStreamWriter(new FileOutputStream(fileName), "CP1251");
+        osw.write(data);
+        //osw.write(String.valueOf(Charset.forName("CP1251").encode(data)));
+        //fw.write(String.valueOf(Charset.forName("UTF-8").encode(data)));
+        osw.close();
     }
 
     public static void main(String[] args) {
@@ -54,7 +64,19 @@ public class App {
         });
     }
 
-    public void convertAllFiles() throws IOException {
+    private String readTemplateFromFile(String s) {
+        ClassLoader classLoader = App.class.getClassLoader();
+        File file = new File(classLoader.getResource(s).getFile());
+        try {
+            byte[] bytes = Files.readAllBytes(file.toPath());
+            return new String(bytes);
+        } catch (IOException e) {
+            e.printStackTrace();
+            return "ошибка чтения шаблона " + s;
+        }
+    }
+
+    void convertAllFiles() throws IOException {
         File dir = new File(this.srcFolder);
         if (dir == null) {
             throw new IllegalArgumentException("Не удалось открыть указанный каталог: " + this.srcFolder);
@@ -69,7 +91,7 @@ public class App {
         }
     }
 
-    public void convertXlsxFile(String srcFileName, String dstFileName) throws IOException {
+    private void convertXlsxFile(String srcFileName, String dstFileName) throws IOException {
         String s;
         if ((s = getDataFromXlsx(srcFileName)).equals("")) {
             System.out.println("EMPTY DATA");
@@ -78,7 +100,7 @@ public class App {
         writeHtmlFile(dstFileName, s);
     }
 
-    public String getHtmlFileName(String fileName) {
+    private String getHtmlFileName(String fileName) {
         // cut path
         String baseFileName = Paths.get(fileName).getFileName().toString();
         // cut extension
@@ -86,21 +108,8 @@ public class App {
         return this.destFolder + File.separator + rootFileName + ".html";
     }
 
-    public static void writeHtmlFile(String fileName, String data) throws IOException {
-        if (fileName == null || fileName.equals("")) {
-            throw new IllegalArgumentException("Имя файла не указано.");
-        }
-        OutputStreamWriter osw = new OutputStreamWriter(new FileOutputStream(fileName), "CP1251");
-        osw.write(data);
-        //osw.write(String.valueOf(Charset.forName("CP1251").encode(data)));
-        //fw.write(String.valueOf(Charset.forName("UTF-8").encode(data)));
-        osw.close();
-    }
-
-    public String getDataFromXlsx(String fileName) throws IOException {
+    private String getDataFromXlsx(String fileName) throws IOException {
         ArrayList<RowData> tableData = new ArrayList<>();
-        String header = "";
-        String result = "";
         int rowIndex = -1;
 
         FileInputStream file = new FileInputStream(fileName);
@@ -110,7 +119,6 @@ public class App {
         while (rowIterator.hasNext()) {
             rowIndex++;
             String[] rowData = new String[TABLE_COL_COUNT];
-            boolean addRow = true;
             Row row = rowIterator.next();
             for (int colIndex = 0; colIndex < TABLE_COL_COUNT; colIndex++) {
                 Cell cell = row.getCell(colIndex);
@@ -157,7 +165,7 @@ public class App {
                     for (int i = 0; i < TABLE_COL_COUNT; i++) {
                         if (!rowData[i].equals("")) {
                             if (!tmp.data[i].equals("")) {
-                                tmp.data[i] += "<br>";
+                                tmp.data[i] += "<br />";
                             }
                             tmp.data[i] += rowData[i];
                         }
@@ -172,13 +180,7 @@ public class App {
                 // Незаполненная 2-я ячейка
                 RowData tmp = new RowData();
                 tmp.data = rowData;
-                if (rowIndex == 0) {
-                    // В первой строке - это заголовок
-                    tmp.rowType = ROW_TYPE.TITLE;
-                } else {
-                    // Во второй и далее строке - это подзаголовок
-                    tmp.rowType = ROW_TYPE.SUBTITLE;
-                }
+                tmp.rowType = ROW_TYPE.SUBTITLE;
                 tableData.add(tmp);
             } else {
                 // Все ячейки заполнены
@@ -188,47 +190,30 @@ public class App {
         return addHtml(tableData);
     }
 
-    public String addHtml(ArrayList<RowData> tableData) {
+    private String addHtml(ArrayList<RowData> tableData) {
         String result = "";
 
         if (tableData.size() == 0) {
             return result;
         }
-        RowData r = tableData.get(0);
+        RowData r;
         int rowIndex = 0;
-        if (r.rowType == ROW_TYPE.TITLE) {
-            result += String.format("<h2 class='table-hover-title'>%s</h2>\n", r.data[0]);
-            rowIndex++;
-        }
-        result += "<table class='table-hover'>\n";
         for (; rowIndex < tableData.size(); rowIndex++) {
             r = tableData.get(rowIndex);
-            switch (r.rowType) {
-                case SUBTITLE:
-                    result += String.format("\t<tr><td colspan=2 class='table-hover-subtitle'>%s</td></tr>\n", r.data[0], r.data[1]);
-                    break;
-                default:
-                    result += String.format("\t<tr><td>%s</td><td>%s</td></tr>\n", r.data[0], r.data[1]);
-            }
-
+            result += String.format(templates.get(r.rowType), r.data[0], r.data[1]);
         }
-        result += "</table>";
-        return result;
-    }
-
-    public static String updateLastCell(String result, String data) {
         return result;
     }
 
     private final class RowData {
-        public String[] data;
-        public ROW_TYPE rowType;
+        String[] data;
+        ROW_TYPE rowType;
 
-        public RowData() {
+        RowData() {
 
         }
 
-        public RowData(String[] data, ROW_TYPE rowType) {
+        RowData(String[] data, ROW_TYPE rowType) {
             this.data = data;
             this.rowType = rowType;
         }
