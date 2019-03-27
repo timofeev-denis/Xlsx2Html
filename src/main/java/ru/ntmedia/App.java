@@ -11,8 +11,9 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
+
+import static java.nio.charset.StandardCharsets.UTF_8;
 
 /**
  * Hello world!
@@ -39,7 +40,7 @@ public class App {
         if (fileName == null || fileName.equals("")) {
             throw new IllegalArgumentException("Имя файла не указано.");
         }
-        OutputStreamWriter osw = new OutputStreamWriter(new FileOutputStream(fileName), "CP1251");
+        OutputStreamWriter osw = new OutputStreamWriter(new FileOutputStream(fileName), UTF_8);
         osw.write(data);
         //osw.write(String.valueOf(Charset.forName("CP1251").encode(data)));
         //fw.write(String.valueOf(Charset.forName("UTF-8").encode(data)));
@@ -115,11 +116,10 @@ public class App {
         FileInputStream file = new FileInputStream(fileName);
         XSSFWorkbook workbook = new XSSFWorkbook(file);
         XSSFSheet sheet = workbook.getSheetAt(0);
-        Iterator<Row> rowIterator = sheet.iterator();
-        while (rowIterator.hasNext()) {
+        for (Row aSheet : sheet) {
             rowIndex++;
             String[] rowData = new String[TABLE_COL_COUNT];
-            Row row = rowIterator.next();
+            Row row = aSheet;
             for (int colIndex = 0; colIndex < TABLE_COL_COUNT; colIndex++) {
                 Cell cell = row.getCell(colIndex);
                 if (cell == null || cell.getCellType() == Cell.CELL_TYPE_BLANK) {
@@ -191,18 +191,18 @@ public class App {
     }
 
     private String addHtml(ArrayList<RowData> tableData) {
-        String result = "";
+        StringBuilder result = new StringBuilder();
 
         if (tableData.size() == 0) {
-            return result;
+            return result.toString();
         }
         RowData r;
         int rowIndex = 0;
         for (; rowIndex < tableData.size(); rowIndex++) {
             r = tableData.get(rowIndex);
-            result += String.format(templates.get(r.rowType), r.data[0], r.data[1]);
+            result.append(String.format(templates.get(r.rowType), r.data[0], r.data[1]));
         }
-        return result;
+        return result.toString();
     }
 
     private final class RowData {
