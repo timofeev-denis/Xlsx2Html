@@ -17,8 +17,6 @@ public class MainDialog extends JDialog {
     private JTextField destTextField;
     private JButton setDestFolderButton;
     private JSeparator separator;
-    //private String srcFolder;
-    //private String destFolder;
 
     MainDialog() {
         System.out.println( getClass().getClassLoader().getResource("convert-16x16.png") );
@@ -102,9 +100,7 @@ public class MainDialog extends JDialog {
             }
         });
 
-
-        //
-        setDebugParameters();
+//        setDebugParameters();
     }
 
     private void updateOkButton() {
