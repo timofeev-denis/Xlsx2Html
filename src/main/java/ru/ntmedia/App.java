@@ -1,5 +1,6 @@
 package ru.ntmedia;
 
+import org.apache.commons.io.IOUtils;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
@@ -7,7 +8,6 @@ import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
 import javax.swing.*;
 import java.io.*;
-import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -32,8 +32,8 @@ public class App {
     App(String srcFolder, String destFolder) {
         this.srcFolder = srcFolder;
         this.destFolder = destFolder;
-        templates.put(ROW_TYPE.TEXT, readTemplateFromFile("templates/data-cell.html"));
-        templates.put(ROW_TYPE.SUBTITLE, readTemplateFromFile("templates/subtitle.html"));
+        templates.put(ROW_TYPE.TEXT, readTemplateFromFile("/templates/data-cell.html"));
+        templates.put(ROW_TYPE.SUBTITLE, readTemplateFromFile("/templates/subtitle.html"));
     }
 
     private static void writeHtmlFile(String fileName, String data) throws IOException {
@@ -66,11 +66,9 @@ public class App {
     }
 
     private String readTemplateFromFile(String s) {
-        ClassLoader classLoader = App.class.getClassLoader();
-        File file = new File(classLoader.getResource(s).getFile());
+        InputStream is = App.class.getResourceAsStream(s);
         try {
-            byte[] bytes = Files.readAllBytes(file.toPath());
-            return new String(bytes);
+            return IOUtils.toString(is, UTF_8);
         } catch (IOException e) {
             e.printStackTrace();
             return "ошибка чтения шаблона " + s;
